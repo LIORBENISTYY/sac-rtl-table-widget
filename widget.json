@@ -1,11 +1,10 @@
 {
-  "id": "com.liorbenisty.dynamic.hebrew.table.v1",
-  "name": "Dynamic Hebrew Table",
-  "description": "A dynamic Hebrew table widget with RTL support and SAC data binding",
-  "version": "1.0.0",
-  "newInstancePrefix": "DynamicHebrewTable",
+  "id": "com.liorbenisty.hebrew.table.v2",
+  "name": "Hebrew Dynamic Table",
+  "description": "Dynamic Hebrew table with RTL support",
+  "version": "2.0.0",
+  "newInstancePrefix": "HebrewTable",
   "vendor": "liorbenisty.com",
-  "eula": "",
   "license": "MIT",
   "imports": [
     "datasource"
@@ -20,7 +19,7 @@
     },
     {
       "kind": "builder",
-      "tag": "dynamic-hebrew-table-builder", 
+      "tag": "dynamic-hebrew-table-builder",
       "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
       "integrity": "",
       "ignoreIntegrity": true
@@ -29,38 +28,13 @@
   "properties": {
     "tableTitle": {
       "type": "string",
-      "description": "Title of the table",
+      "description": "Table title",
       "default": "טבלה דינמית"
     },
     "rtlMode": {
       "type": "boolean",
-      "description": "Enable Right-to-Left layout for Hebrew",
+      "description": "RTL mode",
       "default": true
-    },
-    "maxRows": {
-      "type": "integer",
-      "description": "Maximum number of rows to display",
-      "default": 100
-    },
-    "showTotals": {
-      "type": "boolean",
-      "description": "Show totals row for numeric measures",
-      "default": false
-    },
-    "stripedRows": {
-      "type": "boolean",
-      "description": "Enable alternating row colors",
-      "default": true
-    },
-    "formatNumbers": {
-      "type": "boolean",
-      "description": "Format numbers with currency and separators",
-      "default": true
-    },
-    "currencySymbol": {
-      "type": "string",
-      "description": "Currency symbol to display with numbers",
-      "default": "₪"
     }
   },
   "methods": {},
@@ -73,7 +47,7 @@
           "type": "dimension"
         },
         {
-          "id": "measures", 
+          "id": "measures",
           "type": "mainStructureMember"
         }
       ]
