@@ -1,0 +1,35 @@
+{
+  "id": "com.liorbenisty.static.table.v1",
+  "name": "Static Demo Table",
+  "description": "A simple static table widget for testing",
+  "version": "1.0.0",
+  "newInstancePrefix": "StaticTable",
+  "vendor": "liorbenisty.com",
+  "eula": "",
+  "license": "MIT",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "static-table",
+      "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    },
+    {
+      "kind": "builder",
+      "tag": "static-table-builder", 
+      "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "tableTitle": {
+      "type": "string",
+      "description": "Title of the table",
+      "default": "Static Demo Table"
+    }
+  },
+  "methods": {},
+  "events": {}
+}
