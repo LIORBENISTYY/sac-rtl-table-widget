@@ -15,6 +15,10 @@
                 overflow: auto;
                 padding: 20px;
                 box-sizing: border-box;
+                direction: ltr;
+            }
+            .table-container.rtl {
+                direction: rtl;
             }
             .widget-title {
                 font-size: 18px;
@@ -33,6 +37,9 @@
                 padding: 12px;
                 text-align: left;
             }
+            .rtl th, .rtl td {
+                text-align: right;
+            }
             th {
                 background-color: #f7f7f7;
                 font-weight: 600;
@@ -48,48 +55,51 @@
                 text-align: right;
                 font-variant-numeric: tabular-nums;
             }
+            .rtl .number-cell {
+                text-align: left;
+            }
         </style>
-        <div class="table-container">
-            <div class="widget-title" id="widget-title">Static Demo Table</div>
+        <div class="table-container" id="table-container">
+            <div class="widget-title" id="widget-title">טבלת דמו סטטית</div>
             <table>
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Sales</th>
-                        <th>Profit</th>
+                        <th>מוצר</th>
+                        <th>קטגוריה</th>
+                        <th>מכירות</th>
+                        <th>רווח</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td>iPhone 15</td>
-                        <td>Electronics</td>
-                        <td class="number-cell">$1,200</td>
-                        <td class="number-cell">$300</td>
+                        <td>אייפון 15</td>
+                        <td>אלקטרוניקה</td>
+                        <td class="number-cell">₪4,500</td>
+                        <td class="number-cell">₪1,200</td>
                     </tr>
                     <tr>
-                        <td>MacBook Pro</td>
-                        <td>Electronics</td>
-                        <td class="number-cell">$2,500</td>
-                        <td class="number-cell">$500</td>
+                        <td>מקבוק פרו</td>
+                        <td>אלקטרוניקה</td>
+                        <td class="number-cell">₪9,500</td>
+                        <td class="number-cell">₪2,000</td>
                     </tr>
                     <tr>
-                        <td>Office Chair</td>
-                        <td>Furniture</td>
-                        <td class="number-cell">$350</td>
-                        <td class="number-cell">$100</td>
+                        <td>כיסא משרדי</td>
+                        <td>רהיטים</td>
+                        <td class="number-cell">₪1,300</td>
+                        <td class="number-cell">₪400</td>
                     </tr>
                     <tr>
-                        <td>Desk Lamp</td>
-                        <td>Furniture</td>
-                        <td class="number-cell">$89</td>
-                        <td class="number-cell">$25</td>
+                        <td>מנורת שולחן</td>
+                        <td>רהיטים</td>
+                        <td class="number-cell">₪350</td>
+                        <td class="number-cell">₪100</td>
                     </tr>
                     <tr>
-                        <td>Coffee Mug</td>
-                        <td>Kitchen</td>
-                        <td class="number-cell">$15</td>
-                        <td class="number-cell">$8</td>
+                        <td>ספל קפה</td>
+                        <td>מטבח</td>
+                        <td class="number-cell">₪60</td>
+                        <td class="number-cell">₪30</td>
                     </tr>
                 </tbody>
             </table>
@@ -137,10 +147,15 @@
         <div class="builder-container">
             <form id="properties-form">
                 <div class="form-group">
-                    <label for="table-title">Table Title:</label>
-                    <input type="text" id="table-title" placeholder="Enter table title">
+                    <label for="table-title">כותרת הטבלה:</label>
+                    <input type="text" id="table-title" placeholder="הכנס כותרת לטבלה">
                 </div>
-                <input type="submit" value="Update Properties">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="rtl-mode"> מצב עברית (RTL)
+                    </label>
+                </div>
+                <input type="submit" value="עדכן הגדרות">
             </form>
         </div>
     `;
@@ -154,7 +169,8 @@
             
             // Default properties
             this._props = {
-                tableTitle: "Static Demo Table"
+                tableTitle: "טבלת דמו סטטית",
+                rtlMode: true
             };
         }
 
@@ -181,10 +197,29 @@
             this._render();
         }
 
+        get rtlMode() {
+            return this._props.rtlMode;
+        }
+
+        set rtlMode(value) {
+            this._props.rtlMode = !!value;
+            this._render();
+        }
+
         _render() {
             const titleElement = this._shadowRoot.querySelector('#widget-title');
+            const containerElement = this._shadowRoot.querySelector('#table-container');
+            
             if (titleElement) {
-                titleElement.textContent = this._props.tableTitle || "Static Demo Table";
+                titleElement.textContent = this._props.tableTitle || "טבלת דמו סטטית";
+            }
+            
+            if (containerElement) {
+                if (this._props.rtlMode) {
+                    containerElement.classList.add('rtl');
+                } else {
+                    containerElement.classList.remove('rtl');
+                }
             }
         }
     }
@@ -205,11 +240,13 @@
 
         _updateProperties() {
             const tableTitle = this._shadowRoot.querySelector('#table-title').value;
+            const rtlMode = this._shadowRoot.querySelector('#rtl-mode').checked;
             
             this.dispatchEvent(new CustomEvent("propertiesChanged", {
                 detail: {
                     properties: {
-                        tableTitle: tableTitle
+                        tableTitle: tableTitle,
+                        rtlMode: rtlMode
                     }
                 }
             }));
@@ -222,6 +259,14 @@
 
         set tableTitle(value) {
             this._shadowRoot.querySelector('#table-title').value = value || "";
+        }
+
+        get rtlMode() {
+            return this._shadowRoot.querySelector('#rtl-mode').checked;
+        }
+
+        set rtlMode(value) {
+            this._shadowRoot.querySelector('#rtl-mode').checked = !!value;
         }
     }
 
