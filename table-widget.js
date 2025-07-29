@@ -2,7 +2,7 @@
     'use strict';
     
     // Main widget template
-    const mainTemplate = document.createElement("template");
+    let mainTemplate = document.createElement("template");
     mainTemplate.innerHTML = `
         <style>
             :host {
@@ -10,30 +10,24 @@
                 width: 100%;
                 height: 100%;
                 font-family: Arial, sans-serif;
-                box-sizing: border-box;
             }
-            .table-container {
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                padding: 15px;
-                box-sizing: border-box;
+            .container {
+                padding: 20px;
                 direction: ltr;
             }
-            .table-container.rtl {
+            .container.rtl {
                 direction: rtl;
             }
-            .widget-title {
-                font-size: 16px;
+            .title {
+                font-size: 18px;
                 font-weight: bold;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
                 color: #333;
             }
             table {
                 width: 100%;
                 border-collapse: collapse;
-                font-size: 13px;
-                border: 1px solid #ddd;
+                font-size: 14px;
             }
             th, td {
                 border: 1px solid #ddd;
@@ -47,39 +41,32 @@
                 background-color: #f5f5f5;
                 font-weight: bold;
             }
-            .number-cell {
-                text-align: right;
-            }
-            .rtl .number-cell {
-                text-align: left;
-            }
             .no-data {
                 text-align: center;
-                padding: 20px;
+                padding: 40px;
                 color: #666;
-                border: 1px dashed #ccc;
-                margin: 10px 0;
+                border: 2px dashed #ccc;
             }
         </style>
-        <div class="table-container" id="container">
-            <div class="widget-title" id="title">טבלה דינמית</div>
+        <div class="container" id="container">
+            <div class="title" id="title">טבלה דינמית</div>
             <div id="no-data" class="no-data">
                 אנא חבר מקור נתונים<br>Please connect data source
             </div>
-            <table id="data-table" style="display: none;">
-                <thead id="table-head"></thead>
-                <tbody id="table-body"></tbody>
+            <table id="table" style="display: none;">
+                <thead id="thead"></thead>
+                <tbody id="tbody"></tbody>
             </table>
         </div>
     `;
 
     // Builder template
-    const builderTemplate = document.createElement("template");
+    let builderTemplate = document.createElement("template");
     builderTemplate.innerHTML = `
         <style>
             .builder {
+                padding: 20px;
                 font-family: Arial, sans-serif;
-                padding: 15px;
             }
             .form-group {
                 margin-bottom: 15px;
@@ -93,162 +80,116 @@
                 width: 100%;
                 padding: 8px;
                 border: 1px solid #ccc;
-                border-radius: 3px;
-                box-sizing: border-box;
+                border-radius: 4px;
             }
             input[type="checkbox"] {
-                margin-right: 5px;
+                margin-right: 8px;
             }
             button {
-                background-color: #0070f3;
+                background: #0070f3;
                 color: white;
-                padding: 10px 15px;
+                padding: 10px 20px;
                 border: none;
-                border-radius: 3px;
+                border-radius: 4px;
                 cursor: pointer;
             }
         </style>
         <div class="builder">
             <div class="form-group">
                 <label>כותרת הטבלה:</label>
-                <input type="text" id="table-title" placeholder="הכנס כותרת">
+                <input type="text" id="title-input" placeholder="הכנס כותרת">
             </div>
             <div class="form-group">
                 <label>
-                    <input type="checkbox" id="rtl-mode"> מצב RTL
+                    <input type="checkbox" id="rtl-input"> מצב RTL
                 </label>
             </div>
-            <button type="button" id="update-btn">עדכן</button>
+            <button id="update-btn">עדכן</button>
         </div>
     `;
 
-    // Main Widget Class
-    class DynamicHebrewTable extends HTMLElement {
+    // Main Widget
+    class MinimalDynamicTable extends HTMLElement {
         constructor() {
             super();
+            this._shadowRoot = this.attachShadow({mode: "open"});
+            this._shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
             
-            try {
-                this._shadowRoot = this.attachShadow({mode: "open"});
-                this._shadowRoot.appendChild(mainTemplate.content.cloneNode(true));
-                
-                this._props = {
-                    tableTitle: "טבלה דינמית",
-                    rtlMode: true
-                };
-                
-                console.log("DynamicHebrewTable constructed successfully");
-            } catch (error) {
-                console.error("Error in DynamicHebrewTable constructor:", error);
-            }
-        }
-
-        connectedCallback() {
-            try {
-                console.log("DynamicHebrewTable connected");
-                this._render();
-            } catch (error) {
-                console.error("Error in connectedCallback:", error);
-            }
+            this._props = {
+                tableTitle: "טבלה דינמית",
+                rtlMode: true
+            };
         }
 
         onCustomWidgetBeforeUpdate(changedProperties) {
-            try {
-                if (changedProperties) {
-                    Object.assign(this._props, changedProperties);
-                }
-            } catch (error) {
-                console.error("Error in onCustomWidgetBeforeUpdate:", error);
+            if (changedProperties) {
+                this._props = {...this._props, ...changedProperties};
             }
         }
 
         onCustomWidgetAfterUpdate(changedProperties) {
-            try {
-                this._render();
-            } catch (error) {
-                console.error("Error in onCustomWidgetAfterUpdate:", error);
-            }
-        }
-
-        get tableTitle() {
-            return this._props.tableTitle;
-        }
-
-        set tableTitle(value) {
-            this._props.tableTitle = value;
-            this._render();
-        }
-
-        get rtlMode() {
-            return this._props.rtlMode;
-        }
-
-        set rtlMode(value) {
-            this._props.rtlMode = !!value;
             this._render();
         }
 
         get myBinding() {
             try {
-                return this.dataBindings && this.dataBindings.getDataBinding 
-                    ? this.dataBindings.getDataBinding('myBinding') 
-                    : null;
-            } catch (error) {
-                console.error("Error accessing data binding:", error);
+                return this.dataBindings?.getDataBinding?.('myBinding');
+            } catch (e) {
+                console.warn('Error accessing data binding:', e);
                 return null;
             }
         }
 
+        get tableTitle() { return this._props.tableTitle; }
+        set tableTitle(value) { 
+            this._props.tableTitle = value || "טבלה דינמית";
+            this._render();
+        }
+
+        get rtlMode() { return this._props.rtlMode; }
+        set rtlMode(value) { 
+            this._props.rtlMode = !!value;
+            this._render();
+        }
+
         _render() {
-            try {
-                const container = this._shadowRoot.getElementById('container');
-                const title = this._shadowRoot.getElementById('title');
-                const noData = this._shadowRoot.getElementById('no-data');
-                const table = this._shadowRoot.getElementById('data-table');
+            const container = this._shadowRoot.getElementById('container');
+            const title = this._shadowRoot.getElementById('title');
+            const noData = this._shadowRoot.getElementById('no-data');
+            const table = this._shadowRoot.getElementById('table');
 
-                // Update title
-                if (title) {
-                    title.textContent = this._props.tableTitle || "טבלה דינמית";
-                }
+            // Update title
+            title.textContent = this._props.tableTitle;
 
-                // Apply RTL
-                if (container) {
-                    if (this._props.rtlMode) {
-                        container.classList.add('rtl');
-                    } else {
-                        container.classList.remove('rtl');
-                    }
-                }
-
-                // Check for data
-                const dataBinding = this.myBinding;
-                
-                if (!dataBinding || !dataBinding.data || dataBinding.data.length === 0) {
-                    noData.style.display = 'block';
-                    table.style.display = 'none';
-                    return;
-                }
-
-                noData.style.display = 'none';
-                table.style.display = 'table';
-                this._renderTable(dataBinding);
-
-            } catch (error) {
-                console.error("Error in _render:", error);
+            // Update RTL
+            if (this._props.rtlMode) {
+                container.classList.add('rtl');
+            } else {
+                container.classList.remove('rtl');
             }
+
+            // Check data binding
+            const dataBinding = this.myBinding;
+            
+            if (!dataBinding || !dataBinding.data || dataBinding.data.length === 0) {
+                noData.style.display = 'block';
+                table.style.display = 'none';
+                return;
+            }
+
+            noData.style.display = 'none';
+            table.style.display = 'table';
+            this._renderTable(dataBinding);
         }
 
         _renderTable(dataBinding) {
-            try {
-                const tableHead = this._shadowRoot.getElementById('table-head');
-                const tableBody = this._shadowRoot.getElementById('table-body');
-                
-                if (!dataBinding.metadata || !dataBinding.data) {
-                    return;
-                }
+            const thead = this._shadowRoot.getElementById('thead');
+            const tbody = this._shadowRoot.getElementById('tbody');
 
-                const dimensions = dataBinding.metadata.dimensions || [];
-                const measures = dataBinding.metadata.measures || [];
-                const data = dataBinding.data;
+            try {
+                const dimensions = dataBinding.metadata?.dimensions || [];
+                const measures = dataBinding.metadata?.measures || [];
+                const data = dataBinding.data || [];
 
                 // Build header
                 let headerHTML = '<tr>';
@@ -259,7 +200,7 @@
                     headerHTML += `<th>${measure.description || measure.id}</th>`;
                 });
                 headerHTML += '</tr>';
-                tableHead.innerHTML = headerHTML;
+                thead.innerHTML = headerHTML;
 
                 // Build body
                 let bodyHTML = '';
@@ -269,15 +210,13 @@
                     const row = data[i];
                     bodyHTML += '<tr>';
                     
-                    // Dimensions
                     dimensions.forEach((dim, index) => {
                         const key = `dimensions_${index}`;
                         const value = row[key];
-                        const displayValue = value ? (value.label || value.id || value.toString()) : '';
+                        const displayValue = value?.label || value?.id || value || '';
                         bodyHTML += `<td>${displayValue}</td>`;
                     });
                     
-                    // Measures
                     measures.forEach((measure, index) => {
                         const key = `measures_${index}`;
                         const value = row[key];
@@ -291,104 +230,64 @@
                             }
                         }
                         
-                        bodyHTML += `<td class="number-cell">${displayValue}</td>`;
+                        bodyHTML += `<td>${displayValue}</td>`;
                     });
                     
                     bodyHTML += '</tr>';
                 }
-
-                tableBody.innerHTML = bodyHTML;
+                
+                tbody.innerHTML = bodyHTML;
 
             } catch (error) {
-                console.error("Error in _renderTable:", error);
-                const tableBody = this._shadowRoot.getElementById('table-body');
-                if (tableBody) {
-                    tableBody.innerHTML = '<tr><td colspan="100%">Error rendering data</td></tr>';
-                }
+                console.error('Render error:', error);
+                tbody.innerHTML = `<tr><td colspan="100%">Error: ${error.message}</td></tr>`;
             }
         }
     }
 
-    // Builder Class
-    class DynamicHebrewTableBuilder extends HTMLElement {
+    // Builder Component
+    class MinimalDynamicTableBuilder extends HTMLElement {
         constructor() {
             super();
+            this._shadowRoot = this.attachShadow({mode: "open"});
+            this._shadowRoot.appendChild(builderTemplate.content.cloneNode(true));
             
-            try {
-                this._shadowRoot = this.attachShadow({mode: "open"});
-                this._shadowRoot.appendChild(builderTemplate.content.cloneNode(true));
-                
-                const updateBtn = this._shadowRoot.getElementById('update-btn');
-                if (updateBtn) {
-                    updateBtn.addEventListener('click', () => {
-                        this._updateProperties();
-                    });
-                }
-                
-                console.log("DynamicHebrewTableBuilder constructed successfully");
-            } catch (error) {
-                console.error("Error in DynamicHebrewTableBuilder constructor:", error);
-            }
+            this._shadowRoot.getElementById('update-btn').addEventListener('click', () => {
+                this._updateProperties();
+            });
         }
 
         _updateProperties() {
-            try {
-                const tableTitle = this._shadowRoot.getElementById('table-title').value;
-                const rtlMode = this._shadowRoot.getElementById('rtl-mode').checked;
-                
-                const event = new CustomEvent("propertiesChanged", {
-                    detail: {
-                        properties: {
-                            tableTitle: tableTitle,
-                            rtlMode: rtlMode
-                        }
+            const title = this._shadowRoot.getElementById('title-input').value;
+            const rtl = this._shadowRoot.getElementById('rtl-input').checked;
+            
+            this.dispatchEvent(new CustomEvent("propertiesChanged", {
+                detail: {
+                    properties: {
+                        tableTitle: title,
+                        rtlMode: rtl
                     }
-                });
-                
-                this.dispatchEvent(event);
-            } catch (error) {
-                console.error("Error in _updateProperties:", error);
-            }
+                }
+            }));
         }
 
-        get tableTitle() {
-            const input = this._shadowRoot.getElementById('table-title');
-            return input ? input.value : '';
+        get tableTitle() { 
+            return this._shadowRoot.getElementById('title-input').value; 
+        }
+        set tableTitle(value) { 
+            this._shadowRoot.getElementById('title-input').value = value || ""; 
         }
 
-        set tableTitle(value) {
-            const input = this._shadowRoot.getElementById('table-title');
-            if (input) {
-                input.value = value || '';
-            }
+        get rtlMode() { 
+            return this._shadowRoot.getElementById('rtl-input').checked; 
         }
-
-        get rtlMode() {
-            const checkbox = this._shadowRoot.getElementById('rtl-mode');
-            return checkbox ? checkbox.checked : false;
-        }
-
-        set rtlMode(value) {
-            const checkbox = this._shadowRoot.getElementById('rtl-mode');
-            if (checkbox) {
-                checkbox.checked = !!value;
-            }
+        set rtlMode(value) { 
+            this._shadowRoot.getElementById('rtl-input').checked = !!value; 
         }
     }
 
     // Register components
-    try {
-        if (!customElements.get("dynamic-hebrew-table")) {
-            customElements.define("dynamic-hebrew-table", DynamicHebrewTable);
-            console.log("dynamic-hebrew-table registered successfully");
-        }
-        
-        if (!customElements.get("dynamic-hebrew-table-builder")) {
-            customElements.define("dynamic-hebrew-table-builder", DynamicHebrewTableBuilder);
-            console.log("dynamic-hebrew-table-builder registered successfully");
-        }
-    } catch (error) {
-        console.error("Error registering custom elements:", error);
-    }
+    customElements.define("minimal-dynamic-table", MinimalDynamicTable);
+    customElements.define("minimal-dynamic-table-builder", MinimalDynamicTableBuilder);
 
 })();
