@@ -1,23 +1,26 @@
 {
-  "id": "com.liorbenisty.hebrew.table.v1",
-  "name": "Hebrew RTL Table",
-  "description": "A Hebrew table widget with RTL support",
+  "id": "com.liorbenisty.dynamic.hebrew.table.v1",
+  "name": "Dynamic Hebrew Table",
+  "description": "A dynamic Hebrew table widget with RTL support and SAC data binding",
   "version": "1.0.0",
-  "newInstancePrefix": "HebrewTable",
+  "newInstancePrefix": "DynamicHebrewTable",
   "vendor": "liorbenisty.com",
   "eula": "",
   "license": "MIT",
+  "imports": [
+    "datasource"
+  ],
   "webcomponents": [
     {
       "kind": "main",
-      "tag": "static-table",
+      "tag": "dynamic-hebrew-table",
       "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
       "integrity": "",
       "ignoreIntegrity": true
     },
     {
       "kind": "builder",
-      "tag": "static-table-builder", 
+      "tag": "dynamic-hebrew-table-builder", 
       "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
       "integrity": "",
       "ignoreIntegrity": true
@@ -27,14 +30,53 @@
     "tableTitle": {
       "type": "string",
       "description": "Title of the table",
-      "default": "טבלת דמו סטטית"
+      "default": "טבלה דינמית"
     },
     "rtlMode": {
       "type": "boolean",
       "description": "Enable Right-to-Left layout for Hebrew",
       "default": true
+    },
+    "maxRows": {
+      "type": "integer",
+      "description": "Maximum number of rows to display",
+      "default": 100
+    },
+    "showTotals": {
+      "type": "boolean",
+      "description": "Show totals row for numeric measures",
+      "default": false
+    },
+    "stripedRows": {
+      "type": "boolean",
+      "description": "Enable alternating row colors",
+      "default": true
+    },
+    "formatNumbers": {
+      "type": "boolean",
+      "description": "Format numbers with currency and separators",
+      "default": true
+    },
+    "currencySymbol": {
+      "type": "string",
+      "description": "Currency symbol to display with numbers",
+      "default": "₪"
     }
   },
   "methods": {},
-  "events": {}
+  "events": {},
+  "dataBindings": {
+    "myBinding": {
+      "feeds": [
+        {
+          "id": "dimensions",
+          "type": "dimension"
+        },
+        {
+          "id": "measures", 
+          "type": "mainStructureMember"
+        }
+      ]
+    }
+  }
 }
