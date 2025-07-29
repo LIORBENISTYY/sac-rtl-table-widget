@@ -1,0 +1,39 @@
+{
+  "name": "RTL Dynamic Table",
+  "description": "Dynamic table with RTL support and data binding",
+  "id": "com.liorbenisty.rtl.table.v1",
+  "version": "1.0.0",
+  "newInstancePrefix": "RTLTable",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "rtl-dynamic-table",
+      "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "rtlMode": {
+      "type": "boolean",
+      "description": "Enable Right-to-Left layout",
+      "default": false
+    }
+  },
+  "methods": {},
+  "events": {},
+  "dataBindings": {
+    "myBinding": {
+      "feeds": [
+        {
+          "id": "dimensions",
+          "type": "dimension"
+        },
+        {
+          "id": "measures", 
+          "type": "mainStructureMember"
+        }
+      ]
+    }
+  }
+}
