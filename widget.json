@@ -1,9 +1,9 @@
 {
-  "id": "com.liorbenisty.static.table.v1",
-  "name": "Static Demo Table",
-  "description": "A simple static table widget for testing",
+  "id": "com.liorbenisty.hebrew.table.v1",
+  "name": "Hebrew RTL Table",
+  "description": "A Hebrew table widget with RTL support",
   "version": "1.0.0",
-  "newInstancePrefix": "StaticTable",
+  "newInstancePrefix": "HebrewTable",
   "vendor": "liorbenisty.com",
   "eula": "",
   "license": "MIT",
@@ -27,7 +27,12 @@
     "tableTitle": {
       "type": "string",
       "description": "Title of the table",
-      "default": "Static Demo Table"
+      "default": "טבלת דמו סטטית"
+    },
+    "rtlMode": {
+      "type": "boolean",
+      "description": "Enable Right-to-Left layout for Hebrew",
+      "default": true
     }
   },
   "methods": {},
