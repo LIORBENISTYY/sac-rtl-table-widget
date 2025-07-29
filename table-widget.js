@@ -95,6 +95,22 @@
             }
         </style>
         <div class="builder">
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                <h4 style="margin: 0 0 10px 0; color: #1976d2;">📊 חיבור נתונים / Data Connection</h4>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4;">
+                    <strong>לחיבור נתונים:</strong><br>
+                    1. לחץ ימין על הווידג'ט ← "Edit Data"<br>
+                    2. או חפש לשונית "Data" בפאנל הימני<br>
+                    3. גרור ממדים ל-"dimensions"<br>
+                    4. גרור מדדים ל-"measures"<br><br>
+                    <strong>To connect data:</strong><br>
+                    1. Right-click widget → "Edit Data"<br>
+                    2. Or find "Data" tab in right panel<br>
+                    3. Drag dimensions to "dimensions"<br>
+                    4. Drag measures to "measures"
+                </p>
+            </div>
+            
             <div class="form-group">
                 <label>כותרת הטבלה:</label>
                 <input type="text" id="title-input" placeholder="הכנס כותרת">
