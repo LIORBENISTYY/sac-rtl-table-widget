@@ -231,6 +231,7 @@ var getScriptPromisify = (src) => {
         return;
       }
 
+      // Same approach as funnelchart.js
       const dimensions = this._myDataSource.metadata.feeds.dimensions.values || [];
       const measures = this._myDataSource.metadata.feeds.measures.values || [];
       const data = this._myDataSource.data || [];
@@ -255,17 +256,17 @@ var getScriptPromisify = (src) => {
       });
       tableHTML += '</tr></thead>';
 
-      // Body
+      // Body - Same data access pattern as funnelchart.js
       tableHTML += '<tbody>';
-      const maxRows = Math.min(100, data.length); // Limit for performance
+      const maxRows = Math.min(100, data.length);
 
       for (let i = 0; i < maxRows; i++) {
         const row = data[i];
         tableHTML += '<tr>';
 
-        // Dimension values
+        // Dimension values - Use same access pattern as funnel chart
         dimensions.forEach(dimension => {
-          const value = row[dimension.id];
+          const value = row[dimension]; // Direct access like funnel chart
           let displayValue = '';
           
           if (value !== undefined && value !== null) {
@@ -279,9 +280,9 @@ var getScriptPromisify = (src) => {
           tableHTML += `<td>${this._escapeHtml(displayValue)}</td>`;
         });
 
-        // Measure values
+        // Measure values - Use same access pattern as funnel chart
         measures.forEach(measure => {
-          const value = row[measure.id];
+          const value = row[measure]; // Direct access like funnel chart
           let displayValue = '';
           
           if (value !== undefined && value !== null) {
@@ -360,5 +361,174 @@ var getScriptPromisify = (src) => {
     }
   }
 
+  // Builder component template
+  const builderTemplate = document.createElement("template");
+  builderTemplate.innerHTML = `
+    <style>
+      :host {
+        display: block;
+        padding: 16px;
+        font-family: Arial, sans-serif;
+        direction: rtl;
+      }
+      .builder-container {
+        max-width: 400px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 500;
+        color: #333;
+        font-size: 14px;
+      }
+      .form-group input[type="text"] {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        direction: rtl;
+        text-align: right;
+      }
+      .form-group input[type="text"]:focus {
+        outline: none;
+        border-color: #0078d4;
+        box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+      }
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .checkbox-group input[type="checkbox"] {
+        margin: 0;
+      }
+      .checkbox-group label {
+        margin: 0;
+        cursor: pointer;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #323130;
+        margin-bottom: 12px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #edebe9;
+      }
+    </style>
+    <div class="builder-container">
+      <div class="section-title">הגדרות טבלה</div>
+      
+      <div class="form-group">
+        <label for="title-input">כותרת הטבלה:</label>
+        <input type="text" id="title-input" placeholder="הכנס כותרת לטבלה">
+      </div>
+      
+      <div class="form-group">
+        <div class="checkbox-group">
+          <input type="checkbox" id="rtl-input">
+          <label for="rtl-input">מצב RTL (עברית/ערבית)</label>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="width-input">רוחב (pixels):</label>
+        <input type="text" id="width-input" placeholder="600">
+      </div>
+      
+      <div class="form-group">
+        <label for="height-input">גובה (pixels):</label>
+        <input type="text" id="height-input" placeholder="420">
+      </div>
+    </div>
+  `;
+
+  class RTLDynamicTableBuilder extends HTMLElement {
+    constructor() {
+      super();
+      
+      this._shadowRoot = this.attachShadow({ mode: "open" });
+      this._shadowRoot.appendChild(builderTemplate.content.cloneNode(true));
+      
+      this._props = {};
+      
+      // Add event listeners for real-time updates
+      this._shadowRoot.getElementById('title-input').addEventListener('input', () => {
+        this._updateProperty('tableTitle', this._shadowRoot.getElementById('title-input').value);
+      });
+      
+      this._shadowRoot.getElementById('rtl-input').addEventListener('change', () => {
+        this._updateProperty('rtlMode', this._shadowRoot.getElementById('rtl-input').checked);
+      });
+      
+      this._shadowRoot.getElementById('width-input').addEventListener('input', () => {
+        const value = parseInt(this._shadowRoot.getElementById('width-input').value);
+        if (!isNaN(value) && value > 0) {
+          this._updateProperty('width', value);
+        }
+      });
+      
+      this._shadowRoot.getElementById('height-input').addEventListener('input', () => {
+        const value = parseInt(this._shadowRoot.getElementById('height-input').value);
+        if (!isNaN(value) && value > 0) {
+          this._updateProperty('height', value);
+        }
+      });
+    }
+
+    _updateProperty(propertyName, value) {
+      this._props[propertyName] = value;
+      
+      // Dispatch property change event
+      this.dispatchEvent(new CustomEvent("propertiesChanged", {
+        detail: {
+          properties: {
+            [propertyName]: value
+          }
+        }
+      }));
+    }
+
+    // Property getters and setters
+    get tableTitle() {
+      return this._shadowRoot.getElementById('title-input').value;
+    }
+    
+    set tableTitle(value) {
+      this._shadowRoot.getElementById('title-input').value = value || "טבלה דינמית";
+    }
+
+    get rtlMode() {
+      return this._shadowRoot.getElementById('rtl-input').checked;
+    }
+    
+    set rtlMode(value) {
+      this._shadowRoot.getElementById('rtl-input').checked = !!value;
+    }
+
+    get width() {
+      const value = parseInt(this._shadowRoot.getElementById('width-input').value);
+      return isNaN(value) ? 600 : value;
+    }
+    
+    set width(value) {
+      this._shadowRoot.getElementById('width-input').value = value || 600;
+    }
+
+    get height() {
+      const value = parseInt(this._shadowRoot.getElementById('height-input').value);
+      return isNaN(value) ? 420 : value;
+    }
+    
+    set height(value) {
+      this._shadowRoot.getElementById('height-input').value = value || 420;
+    }
+  }
+
+  // Register both components
   customElements.define("minimal-dynamic-table", RTLDynamicTable);
+  customElements.define("minimal-dynamic-table-builder", RTLDynamicTableBuilder);
 })();
