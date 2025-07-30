@@ -15,14 +15,8 @@
     }
   ],
   "properties": {
-    "width": {
-      "type": "integer",
-      "default": 600
-    },
-    "height": {
-      "type": "integer",
-      "default": 400
-    },
+    "width": { "type": "integer", "default": 600 },
+    "height": { "type": "integer", "default": 400 },
     "caption": {
       "type": "string",
       "description": "Table title",
@@ -32,14 +26,8 @@
   "dataBindings": {
     "myDataSource": {
       "feeds": [
-        {
-          "id": "dimensions",
-          "type": "dimension"
-        },
-        {
-          "id": "measures",
-          "type": "mainStructureMember"
-        }
+        { "id": "dimensions", "type": "dimension" },
+        { "id": "measures", "type": "mainStructureMember" }
       ]
     }
   },
@@ -51,8 +39,6 @@
     }
   },
   "events": {
-    "onResultChanged": {
-      "description": "called when the data changes"
-    }
+    "onResultChanged": { "description": "called when the data changes" }
   }
 }
