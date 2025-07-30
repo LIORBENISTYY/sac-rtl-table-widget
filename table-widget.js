@@ -97,144 +97,162 @@ var getScriptPromisify = (src) => {
       this._shadowRoot.appendChild(prepared.content.cloneNode(true));
 
       this._root = this._shadowRoot.getElementById("root");
-      this._titleElement = this._shadowRoot.getElementById("tableTitle");
-      this._contentElement = this._shadowRoot.getElementById("content");
+      // this._titleElement = this._shadowRoot.getElementById("tableTitle");
+      // this._contentElement = this._shadowRoot.getElementById("content");
 
-      this._props = {
-        width: 600,
-        height: 420,
-        tableTitle: "טבלה דינמית",
-        rtlMode: true,
-        dimensionFeed: [],
-        measureFeed: []
-      };
+      // this._props = {
+      //   width: 600,
+      //   height: 420,
+      //   tableTitle: "טבלה דינמית",
+      //   rtlMode: true,
+      //   dimensionFeed: [],
+      //   measureFeed: []
+      // };
+
+      this._props = {};
 
       this.render();
     }
 
     onCustomWidgetResize(width, height) {
-      this._props.width = width;
-      this._props.height = height;
+      // this._props.width = width;
+      // this._props.height = height;
       this.render();
     }
 
-    // Properties getters and setters
-    get tableTitle() {
-      return this._props.tableTitle;
-    }
+    // // Properties getters and setters
+    // get tableTitle() {
+    //   return this._props.tableTitle;
+    // }
 
-    set tableTitle(value) {
-      this._props.tableTitle = value || "טבלה דינמית";
-      this._updateTitle();
-    }
+    // set tableTitle(value) {
+    //   this._props.tableTitle = value || "טבלה דינמית";
+    //   this._updateTitle();
+    // }
 
-    get rtlMode() {
-      return this._props.rtlMode;
-    }
+    // get rtlMode() {
+    //   return this._props.rtlMode;
+    // }
 
-    set rtlMode(value) {
-      this._props.rtlMode = !!value;
-      this._updateRTL();
-    }
+    // set rtlMode(value) {
+    //   this._props.rtlMode = !!value;
+    //   this._updateRTL();
+    // }
 
-    get width() {
-      return this._props.width;
-    }
+    // get width() {
+    //   return this._props.width;
+    // }
 
-    set width(value) {
-      this._props.width = value;
-    }
+    // set width(value) {
+    //   this._props.width = value;
+    // }
 
-    get height() {
-      return this._props.height;
-    }
+    // get height() {
+    //   return this._props.height;
+    // }
 
-    set height(value) {
-      this._props.height = value;
-    }
+    // set height(value) {
+    //   this._props.height = value;
+    // }
 
-    get dimensionFeed() {
-      return this._props.dimensionFeed;
-    }
+    // get dimensionFeed() {
+    //   return this._props.dimensionFeed;
+    // }
 
-    set dimensionFeed(value) {
-      this._props.dimensionFeed = value || [];
-    }
+    // set dimensionFeed(value) {
+    //   this._props.dimensionFeed = value || [];
+    // }
 
-    get measureFeed() {
-      return this._props.measureFeed;
-    }
+    // get measureFeed() {
+    //   return this._props.measureFeed;
+    // }
 
-    set measureFeed(value) {
-      this._props.measureFeed = value || [];
-    }
+    // set measureFeed(value) {
+    //   this._props.measureFeed = value || [];
+    // }
 
     set myDataSource(dataBinding) {
       this._myDataSource = dataBinding;
       this.render();
     }
 
-    _updateTitle() {
-      if (this._titleElement) {
-        this._titleElement.textContent = this._props.tableTitle;
-      }
-    }
+    // _updateTitle() {
+    //   if (this._titleElement) {
+    //     this._titleElement.textContent = this._props.tableTitle;
+    //   }
+    // }
 
-    _updateRTL() {
-      if (this._root) {
-        if (this._props.rtlMode) {
-          this._root.classList.add('rtl');
-        } else {
-          this._root.classList.remove('rtl');
-        }
-      }
-    }
+    // _updateRTL() {
+    //   if (this._root) {
+    //     if (this._props.rtlMode) {
+    //       this._root.classList.add('rtl');
+    //     } else {
+    //       this._root.classList.remove('rtl');
+    //     }
+    //   }
+    // }
 
-    async render() {
-      // Update title and RTL mode
-      this._updateTitle();
-      this._updateRTL();
+    // async render() {
+    //   // Update title and RTL mode
+    //   this._updateTitle();
+    //   this._updateRTL();
+
+    //   if (!this._myDataSource || this._myDataSource.state !== "success") {
+    //     this._showNoData();
+    //     return;
+    //   }
+
+    //   try {
+    //     this._renderTable();
+    //   } catch (error) {
+    //     this._showError(error.message);
+    //   }
+    // }
+
+    // _showNoData() {
+    //   this._contentElement.innerHTML = `
+    //     <div class="no-data">
+    //       אנא חבר מקור נתונים<br>
+    //       Please connect data source
+    //     </div>
+    //   `;
+    // }
+
+    // _showError(message) {
+    //   this._contentElement.innerHTML = `
+    //     <div class="error">
+    //       שגיאה: ${message}<br>
+    //       Error: ${message}
+    //     </div>
+    //   `;
+    // }
+
+    // _renderTable() {
+    //   if (!this._myDataSource.metadata || !this._myDataSource.data) {
+    //     this._showNoData();
+    //     return;
+    //   }
+
+      async render() {
+      await getScriptPromisify(
+        "https://cdnjs.cloudflare.com/ajax/libs/echarts/5.0.0/echarts.min.js"
+      );
 
       if (!this._myDataSource || this._myDataSource.state !== "success") {
-        this._showNoData();
         return;
       }
-
-      try {
-        this._renderTable();
-      } catch (error) {
-        this._showError(error.message);
-      }
-    }
-
-    _showNoData() {
-      this._contentElement.innerHTML = `
-        <div class="no-data">
-          אנא חבר מקור נתונים<br>
-          Please connect data source
-        </div>
-      `;
-    }
-
-    _showError(message) {
-      this._contentElement.innerHTML = `
-        <div class="error">
-          שגיאה: ${message}<br>
-          Error: ${message}
-        </div>
-      `;
-    }
-
-    _renderTable() {
-      if (!this._myDataSource.metadata || !this._myDataSource.data) {
-        this._showNoData();
-        return;
-      }
-
+        
       // Same approach as funnelchart.js
-      const dimensions = this._myDataSource.metadata.feeds.dimensions.values || [];
-      const measures = this._myDataSource.metadata.feeds.measures.values || [];
-      const data = this._myDataSource.data || [];
+      const dimensions = this._myDataSource.metadata.feeds.dimensions.values[0];
+      const measures = this._myDataSource.metadata.feeds.measures.values[0];
+      // const data = this._myDataSource.data || [];
+      const data = this._myDataSource.data.map((data) => {
+        return {
+          name: data[dimension].label,
+          value: data[measure].raw,
+        };
+      });
+        
 
       if (dimensions.length === 0 && measures.length === 0) {
         this._showNoData();
