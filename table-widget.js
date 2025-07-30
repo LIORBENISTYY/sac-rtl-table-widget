@@ -94,7 +94,9 @@ var getScriptPromisify = (src) => {
 
     set caption(value) {
       this._caption = value;
-      this.render();
+      if (this._tableTitle) {
+        this.render();
+      }
     }
 
     async render() {
