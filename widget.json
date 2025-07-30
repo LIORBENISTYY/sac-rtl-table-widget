@@ -1,46 +1,36 @@
 {
-  "id": "com.liorbenisty.hebrew.table.v2",
-  "name": "Hebrew Dynamic Table",
-  "description": "Dynamic Hebrew table with RTL support",
-  "version": "2.0.0",
-  "newInstancePrefix": "HebrewTable",
-  "vendor": "liorbenisty.com",
-  "license": "MIT",
-  "imports": [
-    "datasource"
-  ],
+  "id": "com.sap.sac.sample.tablewidget",
+  "name": "Table Widget",
+  "description": "A Custom Widget to display tabular data from SAC",
+  "vendor": "SAP",
+  "version": "1.0.0",
+  "icon": "",
   "webcomponents": [
     {
       "kind": "main",
-      "tag": "dynamic-hebrew-table",
-      "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
-      "integrity": "",
-      "ignoreIntegrity": true
-    },
-    {
-      "kind": "builder",
-      "tag": "dynamic-hebrew-table-builder",
-      "url": "https://liorbenistyy.github.io/sac-rtl-table-widget/table-widget.js",
+      "tag": "github-sap-table-widget",
+      "url": "/tableWidget.js",
       "integrity": "",
       "ignoreIntegrity": true
     }
   ],
   "properties": {
-    "tableTitle": {
+    "width": {
+      "type": "integer",
+      "default": 600
+    },
+    "height": {
+      "type": "integer",
+      "default": 400
+    },
+    "caption": {
       "type": "string",
       "description": "Table title",
-      "default": "טבלה דינמית"
-    },
-    "rtlMode": {
-      "type": "boolean",
-      "description": "RTL mode",
-      "default": true
+      "default": ""
     }
   },
-  "methods": {},
-  "events": {},
   "dataBindings": {
-    "myBinding": {
+    "myDataSource": {
       "feeds": [
         {
           "id": "dimensions",
@@ -51,6 +41,18 @@
           "type": "mainStructureMember"
         }
       ]
+    }
+  },
+  "methods": {
+    "getDataSource": {
+      "parameters": [],
+      "returnType": "DataSource",
+      "body": "return this.dataBindings.getDataBinding('myDataSource').getDataSource();"
+    }
+  },
+  "events": {
+    "onResultChanged": {
+      "description": "called when the data changes"
     }
   }
 }
