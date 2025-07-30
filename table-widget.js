@@ -12,18 +12,16 @@
                 font-family: Arial, sans-serif;
             }
             .container {
-                padding: 15px;
+                padding: 20px;
                 direction: ltr;
-                height: 100%;
-                box-sizing: border-box;
             }
             .container.rtl {
                 direction: rtl;
             }
             .title {
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: bold;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
                 color: #333;
             }
             table {
@@ -45,7 +43,7 @@
             }
             .no-data {
                 text-align: center;
-                padding: 30px;
+                padding: 40px;
                 color: #666;
                 border: 2px dashed #ccc;
             }
@@ -53,8 +51,7 @@
         <div class="container" id="container">
             <div class="title" id="title">טבלה דינמית</div>
             <div id="no-data" class="no-data">
-                אין נתונים - חבר מקור נתונים<br>
-                No data - Connect data source
+                אנא חבר מקור נתונים<br>Please connect data source
             </div>
             <table id="table" style="display: none;">
                 <thead id="thead"></thead>
@@ -68,7 +65,7 @@
     builderTemplate.innerHTML = `
         <style>
             .builder {
-                padding: 15px;
+                padding: 20px;
                 font-family: Arial, sans-serif;
             }
             .form-group {
@@ -95,17 +92,16 @@
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
-                width: 100%;
             }
         </style>
         <div class="builder">
             <div class="form-group">
-                <label>כותרת:</label>
+                <label>כותרת הטבלה:</label>
                 <input type="text" id="title-input" placeholder="הכנס כותרת">
             </div>
             <div class="form-group">
                 <label>
-                    <input type="checkbox" id="rtl-input"> RTL
+                    <input type="checkbox" id="rtl-input"> מצב RTL
                 </label>
             </div>
             <button id="update-btn">עדכן</button>
@@ -113,7 +109,7 @@
     `;
 
     // Main Widget
-    class HebrewDynamicTable extends HTMLElement {
+    class MinimalDynamicTable extends HTMLElement {
         constructor() {
             super();
             this._shadowRoot = this.attachShadow({mode: "open"});
@@ -135,11 +131,11 @@
             this._render();
         }
 
-        get myDataBinding() {
+        get myBinding() {
             try {
-                return this.dataBindings && this.dataBindings.getDataBinding ? 
-                       this.dataBindings.getDataBinding('myDataBinding') : null;
+                return this.dataBindings?.getDataBinding?.('myBinding');
             } catch (e) {
+                console.warn('Error accessing data binding:', e);
                 return null;
             }
         }
@@ -162,15 +158,18 @@
             const noData = this._shadowRoot.getElementById('no-data');
             const table = this._shadowRoot.getElementById('table');
 
+            // Update title
             title.textContent = this._props.tableTitle;
 
+            // Update RTL
             if (this._props.rtlMode) {
                 container.classList.add('rtl');
             } else {
                 container.classList.remove('rtl');
             }
 
-            const dataBinding = this.myDataBinding;
+            // Check data binding
+            const dataBinding = this.myBinding;
             
             if (!dataBinding || !dataBinding.data || dataBinding.data.length === 0) {
                 noData.style.display = 'block';
@@ -188,38 +187,47 @@
             const tbody = this._shadowRoot.getElementById('tbody');
 
             try {
+                const dimensions = dataBinding.metadata?.dimensions || [];
+                const measures = dataBinding.metadata?.measures || [];
                 const data = dataBinding.data || [];
-                if (data.length === 0) return;
-
-                // Get first row to determine structure
-                const firstRow = data[0];
-                const columns = Object.keys(firstRow);
 
                 // Build header
                 let headerHTML = '<tr>';
-                columns.forEach(col => {
-                    const displayName = col.replace('dimensions_', 'ממד ').replace('measures_', 'מדד ');
-                    headerHTML += `<th>${displayName}</th>`;
+                dimensions.forEach(dim => {
+                    headerHTML += `<th>${dim.description || dim.id}</th>`;
+                });
+                measures.forEach(measure => {
+                    headerHTML += `<th>${measure.description || measure.id}</th>`;
                 });
                 headerHTML += '</tr>';
                 thead.innerHTML = headerHTML;
 
                 // Build body
                 let bodyHTML = '';
-                const maxRows = Math.min(50, data.length);
+                const maxRows = Math.min(50, data.length); // Limit to 50 rows for performance
                 
                 for (let i = 0; i < maxRows; i++) {
                     const row = data[i];
                     bodyHTML += '<tr>';
                     
-                    columns.forEach(col => {
-                        const value = row[col];
+                    dimensions.forEach((dim, index) => {
+                        const key = `dimensions_${index}`;
+                        const value = row[key];
+                        const displayValue = value?.label || value?.id || value || '';
+                        bodyHTML += `<td>${displayValue}</td>`;
+                    });
+                    
+                    measures.forEach((measure, index) => {
+                        const key = `measures_${index}`;
+                        const value = row[key];
                         let displayValue = '';
                         
-                        if (value && typeof value === 'object') {
-                            displayValue = value.label || value.formatted || value.raw || value.id || '';
-                        } else {
-                            displayValue = value || '';
+                        if (value !== undefined && value !== null) {
+                            if (typeof value === 'object') {
+                                displayValue = value.formatted || value.raw || '';
+                            } else {
+                                displayValue = value.toString();
+                            }
                         }
                         
                         bodyHTML += `<td>${displayValue}</td>`;
@@ -232,13 +240,13 @@
 
             } catch (error) {
                 console.error('Render error:', error);
-                tbody.innerHTML = `<tr><td colspan="100%">שגיאה: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="100%">Error: ${error.message}</td></tr>`;
             }
         }
     }
 
     // Builder Component
-    class HebrewDynamicTableBuilder extends HTMLElement {
+    class MinimalDynamicTableBuilder extends HTMLElement {
         constructor() {
             super();
             this._shadowRoot = this.attachShadow({mode: "open"});
@@ -278,8 +286,8 @@
         }
     }
 
-    // Register components - CRITICAL: These must match the JSON tags exactly
-    customElements.define("hebrew-dynamic-table", HebrewDynamicTable);
-    customElements.define("hebrew-dynamic-table-builder", HebrewDynamicTableBuilder);
+    // Register components
+    customElements.define("minimal-dynamic-table", MinimalDynamicTable);
+    customElements.define("minimal-dynamic-table-builder", MinimalDynamicTableBuilder);
 
 })();
