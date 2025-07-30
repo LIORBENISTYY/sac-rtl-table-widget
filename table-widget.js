@@ -1,39 +1,86 @@
-(function () {
-  const template = document.createElement("template");
-  template.innerHTML = `
-    <style>
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      th, td {
-        padding: 8px;
-        border: 1px solid #ccc;
-        text-align: left;
-      }
-      thead {
-        background-color: #f2f2f2;
-      }
-    </style>
-    <div id="root">
-      <h3 id="caption"></h3>
-      <table id="data-table">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  `;
+var getScriptPromisify = (src) => {
+  return new Promise((resolve) => {
+    $.getScript(src, resolve);
+  });
+};
 
-  class TableWidget extends HTMLElement {
+(function () {
+  const prepared = document.createElement("template");
+  prepared.innerHTML = `
+          <style>
+            .table-container {
+              width: 100%;
+              height: 100%;
+              overflow: auto;
+              font-family: Arial, sans-serif;
+            }
+            .custom-table {
+              width: 100%;
+              border-collapse: collapse;
+              background-color: white;
+            }
+            .custom-table th {
+              background-color: #f5f5f5;
+              border: 1px solid #ddd;
+              padding: 12px 8px;
+              text-align: left;
+              font-weight: bold;
+              color: #333;
+              position: sticky;
+              top: 0;
+              z-index: 10;
+            }
+            .custom-table td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              color: #333;
+            }
+            .custom-table tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+            .custom-table tr:hover {
+              background-color: #f0f8ff;
+            }
+            .number-cell {
+              text-align: right;
+            }
+            .table-title {
+              font-size: 18px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              color: #333;
+            }
+          </style>
+          <div id="root" style="width: 100%; height: 100%;">
+            <div class="table-container">
+              <div class="table-title" id="tableTitle"></div>
+              <table class="custom-table" id="dataTable">
+                <thead id="tableHeader"></thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        `;
+  class TableWidgetPrepped extends HTMLElement {
     constructor() {
       super();
+
       this._shadowRoot = this.attachShadow({ mode: "open" });
-      this._shadowRoot.appendChild(template.content.cloneNode(true));
-      this._table = this._shadowRoot.getElementById("data-table");
-      this._thead = this._table.querySelector("thead");
-      this._tbody = this._table.querySelector("tbody");
-      this._caption = this._shadowRoot.getElementById("caption");
-      this._myDataSource = null;
+      this._shadowRoot.appendChild(prepared.content.cloneNode(true));
+
+      this._root = this._shadowRoot.getElementById("root");
+      this._tableTitle = this._shadowRoot.getElementById("tableTitle");
+      this._tableHeader = this._shadowRoot.getElementById("tableHeader");
+      this._tableBody = this._shadowRoot.getElementById("tableBody");
+
+      this._props = {};
+      this._caption = "";
+
+      this.render();
+    }
+
+    onCustomWidgetResize(width, height) {
+      this.render();
     }
 
     set myDataSource(dataBinding) {
@@ -41,49 +88,73 @@
       this.render();
     }
 
-    set caption(value) {
-      this._caption.innerText = value || "";
+    get caption() {
+      return this._caption;
     }
 
-    onCustomWidgetResize(width, height) {
+    set caption(value) {
+      this._caption = value;
       this.render();
     }
 
-    render() {
+    async render() {
       if (!this._myDataSource || this._myDataSource.state !== "success") {
+        this._tableBody.innerHTML = "<tr><td colspan='100%'>No data available</td></tr>";
         return;
       }
 
-      const dim = this._myDataSource.metadata.feeds.dimensions.values;
-      const meas = this._myDataSource.metadata.feeds.measures.values;
-      const data = this._myDataSource.data;
+      // Update title
+      this._tableTitle.textContent = this._caption || "Data Table";
 
-      // Clear table
-      this._thead.innerHTML = "";
-      this._tbody.innerHTML = "";
-
-      // Header
-      const headerRow = document.createElement("tr");
-      dim.concat(meas).forEach(id => {
-        const th = document.createElement("th");
-        th.textContent = id;
-        headerRow.appendChild(th);
+      const dimensions = this._myDataSource.metadata.feeds.dimensions.values;
+      const measures = this._myDataSource.metadata.feeds.measures.values;
+      
+      // Build header
+      let headerHTML = "<tr>";
+      dimensions.forEach(dim => {
+        headerHTML += `<th>${dim.description || dim.id}</th>`;
       });
-      this._thead.appendChild(headerRow);
+      measures.forEach(measure => {
+        headerHTML += `<th class="number-cell">${measure.description || measure.id}</th>`;
+      });
+      headerHTML += "</tr>";
+      this._tableHeader.innerHTML = headerHTML;
 
-      // Rows
-      data.forEach(row => {
-        const tr = document.createElement("tr");
-        dim.concat(meas).forEach(id => {
-          const td = document.createElement("td");
-          const cell = row[id];
-          td.textContent = cell ? (cell.label || cell.raw || "") : "";
-          tr.appendChild(td);
+      // Build body
+      let bodyHTML = "";
+      this._myDataSource.data.forEach(row => {
+        bodyHTML += "<tr>";
+        
+        // Add dimension values
+        dimensions.forEach(dim => {
+          const value = row[dim.id] ? row[dim.id].label || row[dim.id].raw : "";
+          bodyHTML += `<td>${value}</td>`;
         });
-        this._tbody.appendChild(tr);
+        
+        // Add measure values
+        measures.forEach(measure => {
+          const value = row[measure.id] ? this.formatNumber(row[measure.id].raw) : "";
+          bodyHTML += `<td class="number-cell">${value}</td>`;
+        });
+        
+        bodyHTML += "</tr>";
       });
+      
+      this._tableBody.innerHTML = bodyHTML;
+    }
+
+    formatNumber(value) {
+      if (value === null || value === undefined || value === "") {
+        return "";
+      }
+      
+      if (typeof value === "number") {
+        return value.toLocaleString();
+      }
+      
+      return value.toString();
     }
   }
 
-  customElements.define("github-sap-table-widget", TableWidget);
+  customElements.define("github-sap-table-widget", TableWidgetPrepped);
 })();
